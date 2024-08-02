@@ -56,17 +56,17 @@ async function handleFileComment(req, res) {
   }
 
   let message = `# ${file_name}에 새 `;
-  message += parent_id ? '댓글' : '코멘트';
-  message += `가 있어요!\n\`${created_at}\n`;
-  message += `${parent_id ? '댓글' : '코멘트'}by ${triggered_by.handle}\`\n\n`;
+  message += parent_id ? '댓글이' : '코멘트가';
+  message += ` 있어요!\n\`${created_at}\`\n`;
+  message += `${parent_id ? 'Reply' : 'Comment'} by ${triggered_by.handle}\`\n\n`;
 
   if (parent_id) {
     // 댓글인 경우, 원래 코멘트 정보 가져오기
     const parentComment = await getParentComment(parent_id, file_key);
     if (parentComment) {
-      message += `## 원래 코멘트:\n${replaceText(parentComment.text)}\n\n`;
+      message += `## 원문:\n${replaceText(parentComment.text)}\n`;
     }
-    message += `## 댓글:\n`;
+    message += `> `;
   } else {
     message += `## 코멘트:\n`;
   }
@@ -88,7 +88,7 @@ async function handleFileComment(req, res) {
     return res.status(404).json({ success: false, message: 'Node ID not found' });
   }
 
-  message += `\n### ${parent_id ? '댓글' : '코멘트'} 링크\nhttps://www.figma.com/file/${file_key}?node-id=${node_id}#${comment_id}\n`;
+  message += `\n### Go to Comment\nhttps://www.figma.com/file/${file_key}?node-id=${node_id}#${comment_id}\n`;
 
   try {
     await axios.post(DISCORD_WEBHOOK_URL, { content: message });
