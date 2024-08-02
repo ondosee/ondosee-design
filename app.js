@@ -72,7 +72,7 @@ async function handleFileComment(req, res) {
     message += `${replaceText(comment.text)}\n`;
   }
 
-  if(parent_id !== "") {
+  if(parent_id == "") {
     const node_id = await getNodeIdFromComment(comment_id, file_key);
     if (!node_id) {
      return res.status(404).json({ success: false, message: 'Node ID not found' });
