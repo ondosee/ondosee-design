@@ -41,33 +41,9 @@ async function getNodeIdFromComment(commentId, fileKey) {
     }
 
     const comment = response.data.comments.find(c => c.id === commentId);
-    return comment ? (comment.client_meta.node_id || comment.client_meta.node_id) : null;
+    return comment ? comment.client_meta.node_id : null;
   } catch (error) {
     console.error('Error fetching node ID from comment:', error.response?.data || error.message);
-    return null;
-  }
-}
-
-async function getParentComment(parent_id, file_key) {
-  try {
-    const url = `https://api.figma.com/v1/files/${file_key}/comments`;
-    const headers = { 'X-Figma-Token': FIGMA_API_TOKEN };
-    const response = await axios.get(url, { headers });
-
-    if (response.status === 403 || response.status === 404) {
-      console.error(`Error ${response.status}: Check your API token and file key.`);
-      return null;
-    }
-
-    const parentComment = response.data.comments.find(c => c.id === parent_id);
-    if (!parentComment) {
-      console.error('Parent comment not found');
-      return null;
-    }
-
-    return parentComment;
-  } catch (error) {
-    console.error('Error fetching parent comment:', error.response?.data || error.message);
     return null;
   }
 }
@@ -82,21 +58,7 @@ async function handleFileComment(req, res) {
   let message = `# ${file_name}에 새 `;
   message += parent_id ? '댓글이' : '코멘트가';
   message += ` 있어요!\n\`${created_at}\`\n`;
-  message += `${parent_id ? 'Reply' : 'Comment'} by ${triggered_by.handle}\`\n\n`;
-
-  if (parent_id) {
-    // 댓글인 경우, 원래 코멘트 정보 가져오기
-    console.log(`Fetching parent comment with ID: ${parent_id}`);
-    const parentComment = await getParentComment(parent_id, file_key);
-    if (parentComment) {
-      message += `## 원문:\n${replaceText(parentComment.message)}\n`;
-    } else {
-      console.log(`Parent comment not found for ID: ${parent_id}`);
-    }
-    message += `> `;
-  } else {
-    message += `## 코멘트:\n`;
-  }
+  message += `${parent_id ? 'Reply' : 'Comment'} by ${triggered_by.handle}\n\n`;
 
   if (Array.isArray(comment)) {
     comment.forEach(item => {
@@ -110,13 +72,15 @@ async function handleFileComment(req, res) {
     message += `${replaceText(comment.text)}\n`;
   }
 
-  const node_id = await getNodeIdFromComment(comment_id, file_key);
-  if (!node_id) {
-    return res.status(404).json({ success: false, message: 'Node ID not found' });
+  if(parent_id) {
+    const node_id = await getNodeIdFromComment(comment_id, file_key);
+    if (!node_id) {
+     return res.status(404).json({ success: false, message: 'Node ID not found' });
+    }
+
+    message += `\n### Go to Comment\nhttps://www.figma.com/file/${file_key}?node-id=${node_id}#${comment_id}\n`;
   }
-
-  message += `\n### Go to Comment\nhttps://www.figma.com/file/${file_key}?node-id=${node_id}#${comment_id}\n`;
-
+  
   try {
     await axios.post(DISCORD_WEBHOOK_URL, { content: message });
     res.status(200).send('Notification sent');
