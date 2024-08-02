@@ -104,7 +104,7 @@ async function getParentComment(parent_id, file_key) {
   try {
     const response = await axios.get(`https://api.figma.com/v1/files/${file_key}/comments/${parent_id}`, {
       headers: {
-        'X-Figma-Token': FIGMA_ACCESS_TOKEN
+        'X-Figma-Token': FIGMA_API_TOKEN
       }
     });
     return response.data;
