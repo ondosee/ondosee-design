@@ -62,7 +62,7 @@ async function handleFileComment(req, res) {
 
   if (parent_id) {
     // 댓글인 경우, 원래 코멘트 정보 가져오기
-    const parentComment = await getParentComment(parent_id, file_key);
+    const parentComment = await getCommentById(comment_id, file_key);
     if (parentComment) {
       message += `## 원문:\n${replaceText(parentComment.text)}\n`;
     }
@@ -99,18 +99,55 @@ async function handleFileComment(req, res) {
   }
 }
 
+/*
 // 부모 코멘트 정보를 가져오는 함수
 async function getParentComment(parent_id, file_key) {
   try {
     const response = await axios.get(`https://api.figma.com/v1/files/${file_key}/comments/${parent_id}`, {
       headers: {
-        'X-Figma-Token': FIGMA_ACCESS_TOKEN
+        'X-Figma-Token': FIGMA_API_TOKEN
       }
     });
     return response.data;
   } catch (error) {
     console.error('Error fetching parent comment:', error);
     return null;
+  }
+} */
+
+// 주어진 Comment ID로 코멘트의 본문을 가져오는 함수
+async function getCommentById(commentId, fileKey) {
+  try {
+      const url = `https://api.figma.com/v1/files/${fileKey}/comments`;
+      const headers = {
+          'X-Figma-Token': FIGMA_API_TOKEN
+      };
+
+      const response = await axios.get(url, { headers });
+
+      if (response.status === 403) {
+          console.error('Forbidden: Check your API token and permissions.');
+          return null;
+      }
+
+      if (response.status === 404) {
+          console.error('Not Found: Check your file key.');
+          return null;
+      }
+
+      const comments = response.data.comments;
+
+      // 주어진 Comment ID에 해당하는 코멘트를 찾습니다.
+      const comment = comments.find(c => c.id === commentId);
+      if (!comment) {
+          console.error('Comment not found');
+          return null;
+      }
+
+      return comment;
+  } catch (error) {
+      console.error('Error fetching comment:', error.response ? error.response.data : error.message);
+      return null;
   }
 }
 
