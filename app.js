@@ -48,15 +48,28 @@ async function getNodeIdFromComment(commentId, fileKey) {
   }
 }
 
-// 이벤트 처리 함수
 async function handleFileComment(req, res) {
-  const { comment, file_name, file_key, comment_id, triggered_by, created_at } = req.body;
+  const { comment, file_name, file_key, comment_id, triggered_by, created_at, parent_id } = req.body;
 
   if (file_name !== '🌧️ ON°C') {
     return res.status(400).send('Unknown file name');
   }
 
-  let message = `# ${file_name}에 새 코멘트가 있어요!\n\`${created_at}\ncommented by ${triggered_by.handle}\`\n\n## Comment:\n`;
+  let message = `# ${file_name}에 새 `;
+  message += parent_id ? '댓글이' : '코멘트가';
+  message += ` 있어요!\n\`${created_at}\`\n`;
+  message += `${parent_id ? 'Reply' : 'Comment'} by ${triggered_by.handle}\`\n\n`;
+
+  if (parent_id) {
+    // 댓글인 경우, 원래 코멘트 정보 가져오기
+    const parentComment = await getParentComment(parent_id, file_key);
+    if (parentComment) {
+      message += `## 원문:\n${replaceText(parentComment.text)}\n`;
+    }
+    message += `> `;
+  } else {
+    message += `## 코멘트:\n`;
+  }
 
   if (Array.isArray(comment)) {
     comment.forEach(item => {
@@ -75,7 +88,7 @@ async function handleFileComment(req, res) {
     return res.status(404).json({ success: false, message: 'Node ID not found' });
   }
 
-  message += `\n### Comment Link\nhttps://www.figma.com/file/${file_key}?node-id=${node_id}#${comment_id}\n`;
+  message += `\n### Go to Comment\nhttps://www.figma.com/file/${file_key}?node-id=${node_id}#${comment_id}\n`;
 
   try {
     await axios.post(DISCORD_WEBHOOK_URL, { content: message });
@@ -83,6 +96,21 @@ async function handleFileComment(req, res) {
   } catch (error) {
     console.error('Error sending notification to Discord:', error.response?.data || error.message);
     res.status(500).send('Error sending notification');
+  }
+}
+
+// 부모 코멘트 정보를 가져오는 함수
+async function getParentComment(parent_id, file_key) {
+  try {
+    const response = await axios.get(`https://api.figma.com/v1/files/${file_key}/comments/${parent_id}`, {
+      headers: {
+        'X-Figma-Token': FIGMA_ACCESS_TOKEN
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching parent comment:', error);
+    return null;
   }
 }
 
