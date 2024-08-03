@@ -73,14 +73,14 @@ async function handleFileComment(req, res) {
     message += `${replaceText(comment.text)}\n`;
   }
 
-  if(parent_id && parent_id.trim() == "") {
-    const node_id = await getNodeIdFromComment(comment_id, file_key);
-    if (!node_id) {
-     return res.status(404).json({ success: false, message: 'Node ID not found' });
-    }
 
-    message += `\n### Go to Comment\nhttps://www.figma.com/file/${file_key}?node-id=${node_id}#${comment_id}\n`;
+  const node_id = await getNodeIdFromComment(parent_id == "" ? comment_id : parent_id, file_key);
+  if (!node_id) {
+    return res.status(404).json({ success: false, message: 'Node ID not found' });
   }
+
+  message += `\n### Go to Comment\nhttps://www.figma.com/file/${file_key}?node-id=${node_id}#${parent_id == "" ? comment_id : parent_id}\n`;
+
 
   try {
     await axios.post(DISCORD_WEBHOOK_URL, { content: message });
