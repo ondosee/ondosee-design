@@ -62,8 +62,8 @@ async function getParentComment(parent_id, file_key) {
       return null;
     }
 
-    const parentComment = response.data.comments.find(comment => comment.id === parent_id);
-    return parentComment ? parentComment : null;
+    const parentComment = response.data.comments.find(c => c.id === parent_id);
+    return parentComment && parentComment.trim() == "" ? null : parentComment;
   } catch (error) {
     console.error('Error fetching parent comment:', error.response?.data || error.message);
     return null;
