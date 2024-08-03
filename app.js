@@ -77,7 +77,7 @@ async function handleFileComment(req, res) {
   message += ` 있어요!\n\`${created_at}\`\n`;
   message += `\`${(parent_id && parent_id.trim() == "") ? 'Commented' : 'Replied'} by ${triggered_by.handle}\`\n\n`;
 
-  if (parent_id !== "") {
+  if (parent_id && parent_id.trim() !== "") {
     const parentComment = await getParentComment(parent_id, file_key);
     message += `> \`${replaceText(parentComment.text)}\`\n\n`;
   }
