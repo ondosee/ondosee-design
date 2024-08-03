@@ -73,15 +73,13 @@ async function handleFileComment(req, res) {
   }
 
   let message = `# ${file_name}에 새 `;
-  message += (parent_id == "") ? '코멘트가' : '댓글이';
+  message += (parent_id && parent_id.trim() == "") ? '코멘트가' : '댓글이';
   message += ` 있어요!\n\`${created_at}\`\n`;
-  message += `\`${(parent_id == "") ? 'Commented' : 'Replied'} by ${triggered_by.handle}\`\n\n`;
+  message += `\`${(parent_id && parent_id.trim() == "") ? 'Commented' : 'Replied'} by ${triggered_by.handle}\`\n\n`;
 
   if (parent_id !== "") {
     const parentComment = await getParentComment(parent_id, file_key);
-    if (parentComment) {
-      message += `> \`${replaceText(parentComment.text)}\`\n\n`;
-    }
+    message += `> \`${replaceText(parentComment.text)}\`\n\n`;
   }
 
   if (Array.isArray(comment)) {
@@ -97,7 +95,7 @@ async function handleFileComment(req, res) {
   }
 
 
-  const node_id = await getNodeIdFromComment(parent_id == "" ? comment_id : parent_id, file_key);
+  const node_id = await getNodeIdFromComment(parent_id && parent_id.trim() == "" ? comment_id : parent_id, file_key);
   if (!node_id) {
     return res.status(404).json({ success: false, message: 'Node ID not found' });
   }
