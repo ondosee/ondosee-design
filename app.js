@@ -56,9 +56,9 @@ async function handleFileComment(req, res) {
   }
 
   let message = `# ${file_name}에 새 `;
-  message += (parent_id && parent_id.trim() == "") ? '코멘트가' : '댓글이';
+  message += (parent_id == "") ? '코멘트가' : '댓글이';
   message += ` 있어요!\n\`${created_at}\`\n`;
-  message += `${(parent_id && parent_id.trim() == "") ? 'Commented' : 'Replied'} by ${triggered_by.handle}\n\n`;
+  message += `\`${(parent_id == "") ? 'Commented' : 'Replied'} by ${triggered_by.handle}\`\n\n`;
 
 
   if (Array.isArray(comment)) {
@@ -79,7 +79,7 @@ async function handleFileComment(req, res) {
     return res.status(404).json({ success: false, message: 'Node ID not found' });
   }
 
-  message += `\n### Go to Comment\nhttps://www.figma.com/file/${file_key}?node-id=${node_id}#${parent_id == "" ? comment_id : parent_id}\n`;
+  message += `\n### Go to Comment\nhttps://www.figma.com/design/${file_key}?node-id=${node_id}#${parent_id == "" ? comment_id : parent_id}\n`;
 
 
   try {
