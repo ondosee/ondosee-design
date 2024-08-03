@@ -22,6 +22,7 @@ function createRegexFromWords(words) {
   return new RegExp(regexStrings.join('|'), 'g');
 }
 
+// 코멘트 본문 처리 함수
 function replaceText(text) {
   return text.replace(replaceRegex, match => {
     const matchedWordObj = replaceWords.find(wordObj => wordObj.word === match);
@@ -29,6 +30,7 @@ function replaceText(text) {
   });
 }
 
+// Node ID를 가져오는 함수
 async function getNodeIdFromComment(commentId, fileKey) {
   try {
     const url = `https://api.figma.com/v1/files/${fileKey}/comments`;
@@ -48,6 +50,21 @@ async function getNodeIdFromComment(commentId, fileKey) {
   }
 }
 
+// 부모 코멘트 정보를 가져오는 함수
+async function getParentComment(parent_id, file_key) {
+  try {
+    const response = await axios.get(`https://api.figma.com/v1/files/${file_key}/comments/${parent_id}`, {
+      headers: {
+        'X-Figma-Token': FIGMA_API_TOKEN
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching parent comment:', error);
+    return null;
+  }
+}
+
 async function handleFileComment(req, res) {
   const { comment, file_name, file_key, comment_id, triggered_by, created_at, parent_id } = req.body;
 
@@ -60,6 +77,12 @@ async function handleFileComment(req, res) {
   message += ` 있어요!\n\`${created_at}\`\n`;
   message += `\`${(parent_id == "") ? 'Commented' : 'Replied'} by ${triggered_by.handle}\`\n\n`;
 
+  if (parent_id !== "") {
+    const parentComment = await getParentComment(parent_id, file_key);
+    if (parentComment) {
+      message += `> \`${replaceText(parentComment.text)}\`\n\n`;
+    }
+  }
 
   if (Array.isArray(comment)) {
     comment.forEach(item => {
