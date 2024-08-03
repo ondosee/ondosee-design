@@ -53,14 +53,19 @@ async function getNodeIdFromComment(commentId, fileKey) {
 // 부모 코멘트 정보를 가져오는 함수
 async function getParentComment(parent_id, file_key) {
   try {
-    const response = await axios.get(`https://api.figma.com/v1/files/${file_key}/comments/${parent_id}`, {
-      headers: {
-        'X-Figma-Token': FIGMA_API_TOKEN
-      }
-    });
-    return response.data;
+    const url = `https://api.figma.com/v1/files/${file_key}/comments`;
+    const headers = { 'X-Figma-Token': FIGMA_API_TOKEN };
+    const response = await axios.get(url, { headers });
+
+    if (response.status === 403 || response.status === 404) {
+      console.error(`Error ${response.status}: Check your API token and file key.`);
+      return null;
+    }
+
+    const parentComment = response.data.comments.find(comment => comment.id === parent_id);
+    return parentComment ? parentComment : null;
   } catch (error) {
-    console.error('Error fetching parent comment:', error);
+    console.error('Error fetching parent comment:', error.response?.data || error.message);
     return null;
   }
 }
