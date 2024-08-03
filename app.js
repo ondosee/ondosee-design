@@ -60,28 +60,26 @@ async function handleFileComment(req, res) {
   message += ` 있어요!\n\`${created_at}\`\n`;
   message += `${(parent_id && parent_id.trim() == "") ? 'Commented' : 'Replied'} by ${triggered_by.handle}\n\n`;
 
+
+  if (Array.isArray(comment)) {
+    comment.forEach(item => {
+      if (item.text) {
+        message += `${replaceText(item.text)}\n`;
+      } else if (item.mention) {
+        message += `Mentioned user: ${item.mention}\n`;
+      }
+    });
+  } else if (comment.text) {
+    message += `${replaceText(comment.text)}\n`;
+  }
+
   if(parent_id && parent_id.trim() == "") {
-
-    if (Array.isArray(comment)) {
-      comment.forEach(item => {
-        if (item.text) {
-          message += `${replaceText(item.text)}\n`;
-        } else if (item.mention) {
-          message += `Mentioned user: ${item.mention}\n`;
-        }
-      });
-    } else if (comment.text) {
-      message += `${replaceText(comment.text)}\n`;
-    }
-
     const node_id = await getNodeIdFromComment(comment_id, file_key);
     if (!node_id) {
      return res.status(404).json({ success: false, message: 'Node ID not found' });
     }
 
     message += `\n### Go to Comment\nhttps://www.figma.com/file/${file_key}?node-id=${node_id}#${comment_id}\n`;
-  } else {
-    message += 'FLAG'
   }
 
   try {
