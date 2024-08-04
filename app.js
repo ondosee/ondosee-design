@@ -22,6 +22,7 @@ function createRegexFromWords(words) {
   return new RegExp(regexStrings.join('|'), 'g');
 }
 
+// 코멘트 본문 처리 함수
 function replaceText(text) {
   return text.replace(replaceRegex, match => {
     const matchedWordObj = replaceWords.find(wordObj => wordObj.word === match);
@@ -29,6 +30,7 @@ function replaceText(text) {
   });
 }
 
+// Node ID를 가져오는 함수
 async function getNodeIdFromComment(commentId, fileKey) {
   try {
     const url = `https://api.figma.com/v1/files/${fileKey}/comments`;
@@ -48,6 +50,26 @@ async function getNodeIdFromComment(commentId, fileKey) {
   }
 }
 
+// 부모 코멘트 원문을 가져오는 함수
+async function getParentComment(parent_id, fileKey) {
+  try {
+    const url = `https://api.figma.com/v1/files/${fileKey}/comments`;
+    const headers = { 'X-Figma-Token': FIGMA_API_TOKEN };
+    const response = await axios.get(url, { headers });
+
+    if (response.status === 403 || response.status === 404) {
+      console.error(`Error ${response.status}: Check your API token and file key.`);
+      return null;
+    }
+
+    const parentComment = response.data.comments.find(c => c.id === parent_id);
+    return parentComment ? parentComment.message : null;
+  } catch (error) {
+    console.error('Error fetching parent comment:', error.response?.data || error.message);
+    return null;
+  }
+}
+
 async function handleFileComment(req, res) {
   const { comment, file_name, file_key, comment_id, triggered_by, created_at, parent_id } = req.body;
 
@@ -60,6 +82,10 @@ async function handleFileComment(req, res) {
   message += ` 있어요!\n\`${created_at}\`\n`;
   message += `\`${(parent_id == "") ? 'Commented' : 'Replied'} by ${triggered_by.handle}\`\n\n`;
 
+  if (parent_id) {
+    const parentComment = await getParentComment(parent_id, file_key);
+    message += `> \`${replaceText(parentComment)}\`\n> \n> `;
+  }
 
   if (Array.isArray(comment)) {
     comment.forEach(item => {
@@ -72,7 +98,6 @@ async function handleFileComment(req, res) {
   } else if (comment.text) {
     message += `${replaceText(comment.text)}\n`;
   }
-
 
   const node_id = await getNodeIdFromComment(parent_id == "" ? comment_id : parent_id, file_key);
   if (!node_id) {
