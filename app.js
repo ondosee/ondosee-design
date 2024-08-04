@@ -63,7 +63,7 @@ async function getParentComment(parent_id, file_key) {
     }
 
     const parentComment = response.data.comments.find(c => c.id === parent_id);
-    return parentComment ? parentComment : null;
+    return parentComment ? parentComment.client_meta.comment : null;
   } catch (error) {
     console.error('Error fetching parent comment:', error.response?.data || error.message);
     return null;
@@ -85,7 +85,7 @@ async function handleFileComment(req, res) {
   if (parent_id) {
     const parentComment = await getParentComment(parent_id, file_key);
     if(parentComment) {
-      message += `> \`${replaceText(parentComment.comment.text)}\`\n\n`;
+      message += `> \`${replaceText(parentComment)}\`\n\n`;
     } else {
       message += `FLAG\n\n`;
     }
