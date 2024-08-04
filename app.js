@@ -51,9 +51,9 @@ async function getNodeIdFromComment(commentId, fileKey) {
 }
 
 // 부모 코멘트 원문을 가져오는 함수
-async function getParentComment(parent_id, file_key) {
+async function getParentComment(parent_id, fileKey) {
   try {
-    const url = `https://api.figma.com/v1/files/${file_key}/comments`;
+    const url = `https://api.figma.com/v1/files/${fileKey}/comments`;
     const headers = { 'X-Figma-Token': FIGMA_API_TOKEN };
     const response = await axios.get(url, { headers });
 
@@ -63,7 +63,7 @@ async function getParentComment(parent_id, file_key) {
     }
 
     const parentComment = response.data.comments.find(c => c.id === parent_id);
-    return parentComment ? parentComment.client_meta.comment : null;
+    return parentComment ? parentComment.message : null;
   } catch (error) {
     console.error('Error fetching parent comment:', error.response?.data || error.message);
     return null;
@@ -84,13 +84,7 @@ async function handleFileComment(req, res) {
 
   if (parent_id) {
     const parentComment = await getParentComment(parent_id, file_key);
-    if(parentComment !== "") {
-      message += `> \`${replaceText(parentComment)}\`\n\n`;
-    } else if(parentComment == null) {
-      message += `failed to get parent comment\n\n`
-    } else if(parentComment == "") {
-      message += `parent comment is not exist\n\n`;
-    }
+    message += `> \`${replaceText(parentComment)}\`\n> \n> `;
   }
 
   if (Array.isArray(comment)) {
@@ -104,7 +98,6 @@ async function handleFileComment(req, res) {
   } else if (comment.text) {
     message += `${replaceText(comment.text)}\n`;
   }
-
 
   const node_id = await getNodeIdFromComment(parent_id == "" ? comment_id : parent_id, file_key);
   if (!node_id) {
