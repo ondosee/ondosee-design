@@ -84,10 +84,12 @@ async function handleFileComment(req, res) {
 
   if (parent_id) {
     const parentComment = await getParentComment(parent_id, file_key);
-    if(parentComment) {
+    if(parentComment !== "") {
       message += `> \`${replaceText(parentComment)}\`\n\n`;
-    } else {
-      message += `FLAG\n\n`;
+    } else if(parentComment == null) {
+      message += `failed to get parent comment\n\n`
+    } else if(parentComment == "") {
+      message += `parent comment is not exist\n\n`;
     }
   }
 
