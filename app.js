@@ -82,9 +82,8 @@ async function handleFileComment(req, res) {
   if (parent_id) {
     const parentComment = await getParentComment(parent_id, file_key);
     message += `> \`${replaceText(parentComment)}\`\n> \n> `;
-  } message += `${replaceText(comment.text)}\n`;
+  }
 
-  /*
   if (Array.isArray(comment)) {
     comment.forEach(item => {
       if (item.text) {
@@ -96,7 +95,6 @@ async function handleFileComment(req, res) {
   } else if (comment.text) {
     message += `${replaceText(comment.text)}\n`;
   }
-  */
 
   const node_id = await getNodeIdFromComment(parent_id == "" ? comment_id : parent_id, file_key);
   if (!node_id) {
