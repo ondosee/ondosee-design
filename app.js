@@ -6,7 +6,6 @@ const app = express();
 const {
   DISCORD_WEBHOOK_URL,
   FIGMA_API_TOKEN,
-  FILE_KEY,
   REPLACE_WORDS,
 } = process.env;
 
@@ -71,16 +70,13 @@ async function getParentComment(parent_id, fileKey) {
 }
 
 async function handleFileComment(req, res) {
-  const { comment, file_name, file_key, comment_id, triggered_by, created_at, parent_id } = req.body;
+  const { comment, file_name, file_key, comment_id, triggered_by, timestamp, parent_id } = req.body;
 
   if (file_name !== '🌧️ ON°C') {
     return res.status(400).send('Unknown file name');
   }
 
-  let message = `# ${file_name}에 새 `;
-  message += (parent_id == "") ? '코멘트가' : '댓글이';
-  message += ` 있어요!\n\`${created_at}\`\n`;
-  message += `\`${(parent_id == "") ? 'Commented' : 'Replied'} by ${triggered_by.handle}\`\n\n`;
+  let message = "";
 
   if (parent_id) {
     const parentComment = await getParentComment(parent_id, file_key);
@@ -104,11 +100,18 @@ async function handleFileComment(req, res) {
     return res.status(404).json({ success: false, message: 'Node ID not found' });
   }
 
-  message += `\n### Go to Comment\nhttps://www.figma.com/design/${file_key}?node-id=${node_id}#${parent_id == "" ? comment_id : parent_id}\n`;
-
-
   try {
-    await axios.post(DISCORD_WEBHOOK_URL, { content: message });
+    await axios.post(DISCORD_WEBHOOK_URL, { embeds: [{
+      "author": {
+        "name": triggered_by.handle,
+        "icon_url": triggered_by.img_url
+      },
+      "title": `[${file_name}] ${(parent_id) ? 'New reply on comment' : 'New review comment on design'}`,
+      "url": `https://www.figma.com/design/${file_key}?node-id=${node_id}#${parent_id ? parent_id : comment_id}`,
+      "description": message,
+      "timestamp": timestamp,
+      "color": `${(parent_id) ? '776715' : '16760576'}`
+    }]});
     res.status(200).send('Notification sent');
   } catch (error) {
     console.error('Error sending notification to Discord:', error.response?.data || error.message);
@@ -118,26 +121,37 @@ async function handleFileComment(req, res) {
 
 const processedEvents = new Set();
 
-function handleVersionUpdate(req, res) {
-  const { event_type, event_id, file_name, triggered_by, description, label } = req.body;
+async function handleVersionUpdate(req, res) {
+  const { event_id, file_name, file_key, triggered_by, description, label, timestamp } = req.body;
 
+  /*
   if (processedEvents.has(event_id)) {
     return res.status(200).json({ message: 'Duplicate event ignored' });
   }
   processedEvents.add(event_id);
+  */
 
   if (file_name !== '🌧️ ON°C') {
     return res.status(400).send('Unknown file name');
   }
 
-  const message = `## ${file_name} 피그마가 버전업 했어요!\n\`updated by ${triggered_by.handle}\`\n\n### 버전명: ${label}\n${description}\n`;
-
-  axios.post(DISCORD_WEBHOOK_URL, { content: message })
-    .then(() => res.status(200).send('Notification sent'))
-    .catch(error => {
-      console.error('Error sending notification to Discord:', error.response?.data || error.message);
-      res.status(500).send('Error sending notification');
-    });
+  try {
+    await axios.post(DISCORD_WEBHOOK_URL, { embeds: [{
+      "author": {
+        "name": triggered_by.handle,
+        "icon_url": triggered_by.img_url
+      },
+      "title": `[${file_name}] **New version update on design: ${label}**`,
+      "url": `https://www.figma.com/design/${file_key}/%F0%9F%8C%A7%EF%B8%8F-ON%C2%B0C`,
+      "description": `> ${description}`,
+      "timestamp": timestamp,
+      "color": `33023`
+    }]});
+    res.status(200).send('Notification sent');
+  } catch (error) {
+    console.error('Error sending notification to Discord:', error.response?.data || error.message);
+    res.status(500).send('Error sending notification');
+  }
 }
 
 // 라우트
