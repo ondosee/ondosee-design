@@ -143,7 +143,7 @@ async function handleVersionUpdate(req, res) {
       },
       "title": `[${file_name}] **New version update on design: ${label}**`,
       "url": `https://www.figma.com/design/${file_key}/%F0%9F%8C%A7%EF%B8%8F-ON%C2%B0C`,
-      "description": `> ${description}`,
+      "description": `>>> ${description}`,
       "timestamp": timestamp,
       "color": `33023`
     }]});
