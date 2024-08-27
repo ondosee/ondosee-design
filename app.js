@@ -102,7 +102,7 @@ async function handleFileComment(req, res) {
 
   try {
     await axios.post(DISCORD_WEBHOOK_URL, { embeds: [{
-      "thumbnail": {
+      "image": {
         "url": `${(parent_id) ? 'https://media.tenor.com/ehqokSFplPIAAAAM/design-designer.gif' : 'https://media.tenor.com/LNOM2x46A9cAAAAM/designer-burn.gif'}`
       },
       "author": {
@@ -140,7 +140,7 @@ async function handleVersionUpdate(req, res) {
 
   try {
     await axios.post(DISCORD_WEBHOOK_URL, { embeds: [{
-      "thumbnail": {
+      "image": {
         "url": "https://i.namu.wiki/i/vcPIh-2LKgTCpeKuzLpVs1uGs9RHtZDezU438Wk5za0W18Zf_A9k7OO9kAz4yzWW31KjB2Talrzbldmvjv5KGw.gif"
       },
       "author": {
