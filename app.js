@@ -103,7 +103,7 @@ async function handleFileComment(req, res) {
   try {
     await axios.post(DISCORD_WEBHOOK_URL, { embeds: [{
       "thumbnail": {
-        "url": `${(parent_id) ? 'https://tenor.com/ko/view/dev-jokes-designer-and-client-designjokes-dev_design_jokes-gif-20978117' : 'https://tenor.com/view/design-designer-client-punch-gif-17736153'}`
+        "url": `${(parent_id) ? 'https://tenor.com/ko/view/dev-jokes-designer-and-client-designjokes-dev_design_jokes-gif-20978117' : 'https://tenor.com/ko/view/design-designer-client-punch-gif-17736153'}`
       },
       "author": {
         "name": triggered_by.handle,
