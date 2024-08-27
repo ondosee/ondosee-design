@@ -110,7 +110,7 @@ async function handleFileComment(req, res) {
       "url": `https://www.figma.com/design/${file_key}?node-id=${node_id}#${parent_id ? parent_id : comment_id}`,
       "description": message,
       "image": {
-        "url": `${(parent_id) ? 'https://media.tenor.com/ehqokSFplPIAAAAM/design-designer.gif' : 'https://media.tenor.com/LNOM2x46A9cAAAAM/designer-burn.gif'}`
+        "url": `${(parent_id) ? 'https://tenor.com/ko/view/dev-jokes-designer-and-client-designjokes-dev_design_jokes-gif-20978117' : 'https://tenor.com/ko/view/design-designer-client-punch-gif-17736153'}`
       },
       "timestamp": timestamp,
       "color": `${(parent_id) ? '3244390' : '8482097'}`
