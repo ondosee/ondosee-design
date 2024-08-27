@@ -102,6 +102,9 @@ async function handleFileComment(req, res) {
 
   try {
     await axios.post(DISCORD_WEBHOOK_URL, { embeds: [{
+      "thumbnail": {
+        "url": `${(parent_id) ? 'https://media.tenor.com/ehqokSFplPIAAAAM/design-designer.gif' : 'https://media.tenor.com/LNOM2x46A9cAAAAM/designer-burn.gif'}`
+      },
       "author": {
         "name": triggered_by.handle,
         "icon_url": triggered_by.img_url
@@ -109,9 +112,6 @@ async function handleFileComment(req, res) {
       "title": `[${file_name}] ${(parent_id) ? 'New reply on comment' : 'New comment thread on design'}`,
       "url": `https://www.figma.com/design/${file_key}?node-id=${node_id}#${parent_id ? parent_id : comment_id}`,
       "description": message,
-      "image": {
-        "url": `${(parent_id) ? 'https://media.tenor.com/ehqokSFplPIAAAAM/design-designer.gif' : 'https://media.tenor.com/LNOM2x46A9cAAAAM/designer-burn.gif'}`
-      },
       "timestamp": timestamp,
       "color": `${(parent_id) ? '3244390' : '8482097'}`
     }]});
@@ -140,6 +140,9 @@ async function handleVersionUpdate(req, res) {
 
   try {
     await axios.post(DISCORD_WEBHOOK_URL, { embeds: [{
+      "thumbnail": {
+        "url": "https://i.namu.wiki/i/vcPIh-2LKgTCpeKuzLpVs1uGs9RHtZDezU438Wk5za0W18Zf_A9k7OO9kAz4yzWW31KjB2Talrzbldmvjv5KGw.gif"
+      },
       "author": {
         "name": triggered_by.handle,
         "icon_url": triggered_by.img_url
@@ -147,9 +150,6 @@ async function handleVersionUpdate(req, res) {
       "title": `[${file_name}] **New version update on design: ${label}**`,
       "url": `https://www.figma.com/design/${file_key}/%F0%9F%8C%A7%EF%B8%8F-ON%C2%B0C`,
       "description": `>>> ${description}`,
-      "image": {
-        "url": "https://i.namu.wiki/i/vcPIh-2LKgTCpeKuzLpVs1uGs9RHtZDezU438Wk5za0W18Zf_A9k7OO9kAz4yzWW31KjB2Talrzbldmvjv5KGw.gif"
-      },
       "timestamp": timestamp,
       "color": `2379919`
     }]});
