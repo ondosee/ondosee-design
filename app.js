@@ -7,6 +7,9 @@ const {
   DISCORD_WEBHOOK_URL,
   FIGMA_API_TOKEN,
   REPLACE_WORDS,
+  PROJECT_NAME,
+  COMMENT_ENDPOINT,
+  VERSION_ENDPOINT
 } = process.env;
 
 const replaceWords = JSON.parse(REPLACE_WORDS);
@@ -72,7 +75,7 @@ async function getParentComment(parent_id, fileKey) {
 async function handleFileComment(req, res) {
   const { comment, file_name, file_key, comment_id, triggered_by, timestamp, parent_id } = req.body;
 
-  if (file_name !== '🌧️ ON°C') {
+  if (file_name !== PROJECT_NAME) {
     return res.status(400).send('Unknown file name');
   }
 
@@ -134,7 +137,7 @@ async function handleVersionUpdate(req, res) {
   processedEvents.add(event_id);
   */
 
-  if (file_name !== '🌧️ ON°C') {
+  if (file_name !== PROJECT_NAME) {
     return res.status(400).send('Unknown file name');
   }
 
@@ -161,7 +164,7 @@ async function handleVersionUpdate(req, res) {
 }
 
 // 라우트
-app.post('/ondosee-comment', handleFileComment);
-app.post('/ondosee-version-up', handleVersionUpdate);
+app.post(COMMENT_ENDPOINT, handleFileComment);
+app.post(VERSION_ENDPOINT, handleVersionUpdate);
 
 module.exports = app;
